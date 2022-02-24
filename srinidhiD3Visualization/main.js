@@ -143,12 +143,6 @@ d3.csv('temperature_data.csv', dataPreprocessor).then(function(dataset) {
 
     var legend = d3.select("#my_dataviz")
 
-// Handmade legend
-    legend.append("text").attr('x', 190).attr('y', 100).text('Legend').attr('font-size', '20px').attr('font-weight', 'bold').attr('fill', 'white');
-    legend.append("circle").attr("cx",170).attr("cy",130).attr("r", 6).style("fill", "#013F94")
-    legend.append("circle").attr("cx",170).attr("cy",160).attr("r", 6).style("fill", "#C7E6F9")
-    legend.append("text").attr("x", 190).attr("y", 130).text("Male Workers").style("font-size", "15px").attr("alignment-baseline","middle").attr('fill', 'white')
-    legend.append("text").attr("x", 190).attr("y", 160).text("Female Workers").style("font-size", "15px").attr("alignment-baseline","middle").attr('fill', 'white')
 
     //hoverChart(incomes);
 
