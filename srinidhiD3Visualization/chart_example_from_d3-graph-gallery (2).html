@@ -1,0 +1,134 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+
+<script>
+
+function onCategoryChanged() {
+    var select = d3.select('#categorySelect').node();
+    // Get current value of select element
+    var category = select.options[select.selectedIndex].value;
+    // Update chart with the selected category of letters
+    console.log("Category " + category);
+    updateChart(category);
+}
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 1300 - margin.left - margin.right,
+    height = 700 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var chartG = svg.append('g')
+    .attr('transform', 'translate('+[10, 10]+')');
+
+var yearMap = {
+  "2000" : "2000",
+  "2021" : "2021"
+};
+
+//Read the data
+d3.csv("./seasonal_disparities_20th_century_500.csv", function(data) {
+
+  temperature = data;
+
+  // Add X axis
+
+
+  // Add dots
+  // svg.append('g')
+  //   .selectAll("dot")
+  //   .data(data)
+  //   .enter()
+  //   .append("circle")
+  //     .attr("cx", function (d) { return x(d.FIPSCode); } )
+  //     .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
+  //     .attr("r", 1.5)
+  //     .style("fill", "#69b3a2")
+
+  updateChart("2000");
+
+})
+
+var x = d3.scaleLinear()
+    .domain([0, 56000])
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([0, 80])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+function updateChart(filterKey) {
+
+    var filteredTemps = temperature.filter(function(d){
+        console.log(yearMap[filterKey].includes(d.YEAR));
+        return yearMap[filterKey].includes(d.YEAR);
+    });
+    console.log(filteredTemps)
+;    // Create a filtered array of letters based on the filterKey
+
+    // **** Draw and Update your chart here ****
+    var dots = chartG.selectAll('.dot')
+    .data(filteredTemps, function(d) {
+        // console.log(d.YEAR);
+        // console.log("temp : " + d.TEMPERATURE_MA);
+        return d.TEMPERATURE_MA;
+    })
+
+    var dotsEnter = dots.enter()
+        .append("g")
+        .attr('class', 'dot');
+
+        dotsEnter.merge(dots)
+        .append('g')
+        .selectAll("dot")
+        .data(filteredTemps)
+        .enter()
+        .append("circle")
+          .attr("cx", function (d) { return x(d.FIPSCode); } )
+          .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
+          .attr("r", 1.5)
+          .style("fill", "#69b3a2")
+
+    dots.exit().remove();
+}
+
+</script>
+
+<body>
+  <div id="main">
+      <div>
+          <div class="dropdown">
+              <label for="categorySelect">Select Year: </label>
+              <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()">
+                  <option selected value="2000">2000</option>
+                  <option value="2021">2021</option>
+              </select>
+          </div>
+          <div class="legend">
+              <svg id="my_dataviz" height=300 width=450></svg>
+          </div>
+      </div>
+  </div>
+</body>
