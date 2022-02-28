@@ -102,7 +102,7 @@ var statesMap = {
 d3.csv('temperature_data.csv', dataPreprocessor).then(function(dataset) {
     // Create global variables here and intialize the chart
     temperatures = dataset;
-    // console.log(temperatures);
+    //console.log(temperatures);
 
     var subgroups = [temperatures.columns[4], temperatures.columns[4] - temperatures.columns[7]];
     console.log(subgroups);
