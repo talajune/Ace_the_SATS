@@ -4,19 +4,29 @@
 
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
-
+<script src="https://d3js.org/d3.v5.min.js"></script>
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
 
 
 <script>
+function dataPreprocessor(row) {
+  return {
+      FIPSCode: row.FIPSCode,
+      YEAR: row.YEAR,
+      TEMPERATURE_MA: row.TEMPERATURE_MA,
+      TEMPERATURE_INDEX : row.TEMPERATURE_INDEX
+  };
+}
 
 function onCategoryChanged() {
+  //console.log('im changing')
+
     var select = d3.select('#categorySelect').node();
     // Get current value of select element
     var category = select.options[select.selectedIndex].value;
     // Update chart with the selected category of letters
-    console.log("Category " + category);
+    //console.log("Category " + category);
     updateChart(category);
 }
 
@@ -37,31 +47,27 @@ var svg = d3.select("#my_dataviz")
 var chartG = svg.append('g')
     .attr('transform', 'translate('+[10, 10]+')');
 
-var yearMap = {
-  "2000" : "2000",
-  "2021" : "2021"
-};
 
 //Read the data
-d3.csv("./seasonal_disparities_20th_century_500.csv", function(data) {
-
+let temperature;
+d3.csv("seasonal_disparities_20th_century.csv", dataPreprocessor).then(function(data) {
+  //console.log(data)
   temperature = data;
 
   // Add X axis
 
+  var yearList = d3.map(data, function(d){return d.YEAR;}).keys().sort()
 
-  // Add dots
-  // svg.append('g')
-  //   .selectAll("dot")
-  //   .data(data)
-  //   .enter()
-  //   .append("circle")
-  //     .attr("cx", function (d) { return x(d.FIPSCode); } )
-  //     .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
-  //     .attr("r", 1.5)
-  //     .style("fill", "#69b3a2")
+  var dropdown = d3.select('#categorySelect')
+  .selectAll('select')
+  .data(yearList)
+  .enter()
+  .append('option')
+  .text(function(d) {return d})
+  .attr('value', function(d) {return d})
+ 
 
-  updateChart("2000");
+  updateChart(yearList[0]);
 
 })
 
@@ -81,11 +87,12 @@ var x = d3.scaleLinear()
 
 function updateChart(filterKey) {
 
+    //console.log(temperature)
     var filteredTemps = temperature.filter(function(d){
-        console.log(yearMap[filterKey].includes(d.YEAR));
-        return yearMap[filterKey].includes(d.YEAR);
+        //console.log(d.YEAR == filterKey);
+        return d.YEAR == filterKey;
     });
-    console.log(filteredTemps)
+    //console.log(filteredTemps)
 ;    // Create a filtered array of letters based on the filterKey
 
     // **** Draw and Update your chart here ****
@@ -97,22 +104,20 @@ function updateChart(filterKey) {
     })
 
     var dotsEnter = dots.enter()
-        .append("g")
-        .attr('class', 'dot');
-
-        dotsEnter.merge(dots)
-        .append('g')
-        .selectAll("dot")
-        .data(filteredTemps)
-        .enter()
-        .append("circle")
-          .attr("cx", function (d) { return x(d.FIPSCode); } )
-          .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
-          .attr("r", 1.5)
-          .style("fill", "#69b3a2")
-
+      .append("g")
+      .attr('class', 'dot')
+    .append("circle")
+      .attr("cx", function (d) { return x(d.FIPSCode); } )
+      .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
+      .attr("r", 1.5)
+      .style("fill", "#69b3a2")
+      
+      
+  
     dots.exit().remove();
 }
+
+
 
 </script>
 
@@ -122,8 +127,6 @@ function updateChart(filterKey) {
           <div class="dropdown">
               <label for="categorySelect">Select Year: </label>
               <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()">
-                  <option selected value="2000">2000</option>
-                  <option value="2021">2021</option>
               </select>
           </div>
           <div class="legend">
