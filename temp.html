@@ -1,10 +1,26 @@
 <!-- Code from d3-graph-gallery.com -->
 <!DOCTYPE html>
 <meta charset="utf-8">
-
+<head>
+  <link rel='stylesheet' href="style.css">
+</head>
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
+<header>
+  <div class="header">
+    <h1>Team Ace the SATS</h1>
+    <h2>Sponsor: American Communities Project & USA Facts</h2>
+    <h3>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h3>
+  </div>
+  <nav class="navigation">
+    <ul>
+        <li><a class="page" href="../index.html">Home</a></li>
+        <li><a class="page" href="main.html">Temp Viz</a></li>
+        <li><a class="page" href="model.html">Model Comparison</a></li>
+    </ul>
+</nav>
+</header>
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
 
@@ -116,8 +132,6 @@ function updateChart(filterKey) {
   
     dots.exit().remove();
 }
-
-
 
 </script>
 

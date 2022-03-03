@@ -1,0 +1,182 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- JavaScript Bundle with Popper -->
+<head>
+    <title>Ace the SATS Capstone Project</title>
+    <link rel="stylesheet" 
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+    crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel='stylesheet' href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet"></head>
+<!-- Create a div where the graph will take place -->
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <div id="main">
+        <div class="header">
+            <h1>Team Ace the SATS</h1>
+            <h2>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h2>
+            <h3>Sponsor: American Communities Project & USA Facts</h3>
+        </div>
+        <nav class="navigation">
+            <ul>
+                <li><a class="page" href="index.html">Home</a></li>
+                <li><a class="page" href="temp.html">Temp Viz</a></li>
+                <li><a class="page" href="model.html">Model Comparison</a></li>
+            </ul>
+        </nav>
+        <div class='model_compare'>
+            <h4>Model Comparison</h4>
+            <div id='my_dataviz'>
+                <div id="groupSelect"></div>
+            </div>
+        </div>
+    </div>
+  </body>
+  <script>
+  function dataPreprocessor(row) {
+    return {
+        Type: +row.Type,
+        PRECIPITATION_MA : +row.PRECIPITATION_MA,
+        TEMPERATURE_MA: +row.TEMPERATURE_MA
+    };
+        
+    }
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+    
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+    var chartG = svg.append('g')
+        .attr('transform', 'translate('+[10, 10]+')');
+    
+
+    colors = {
+        1: '#ef1101',
+        2 :'#5c0300',
+        3 : '#fd9206',
+        4: '#a45d00',
+        5: '#fef636',
+        6: '#8f8a00',
+        7: '#0efd0e',
+        8: '#009a00',
+        9: '#010afb',
+        10: '#0006a4',
+        11: '#ba20fd',
+        12: '#7600a8',
+        13: '#080f0f',
+        14: '#faffff'
+    }
+
+     
+
+      
+    function plot(group) {
+
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(dataset, function(d) { return d.PRECIPITATION_MA; })])
+            .range([0, width - margin.right]);
+
+            // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([d3.min(dataset, function(d) { return d.TEMPERATURE_MA; }), d3.max(dataset, function(d) { return d.TEMPERATURE_MA; })])
+            .range([ height, 0]);
+
+            svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        var color = d3.scaleOrdinal()
+        .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        .range(['#ef1101','#5c0300', '#fd9206', '#a45d00', '#fef636','#8f8a00','#0efd0e', 
+            '#009a00', '#010afb', '#0006a4','#ba20fd', '#7600a8', '#080f0f','#faffff'])
+    
+        
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        //console.log(group)
+        var filteredGroups = dataset.filter(function(d){
+            return currGroups.includes(d.Type);
+        });
+
+        var dots = chartG.selectAll('.dot')
+        .data(filteredGroups, function(d) {
+            return d;
+        })
+
+        var dotsEnter = dots.enter()
+            .append("g")
+            .attr('class', 'dot')
+            .append("circle")
+            .attr("cx", function (d) { return x(d.PRECIPITATION_MA); } )
+            .attr("cy", function (d) { return y(d.TEMPERATURE_MA); } )
+            .attr("r", 2)
+            .style("fill", function (d) { return color(d.Type) } )
+
+  
+        dots.exit().remove();
+        
+    }
+
+    function groups(num) {
+
+        
+        if (currGroups.includes(parseInt(num.id))) {
+            currGroups.pop(parseInt(num.id))
+        } else {
+            currGroups.push(parseInt(num.id))
+        }
+        
+        plot(currGroups)
+
+    }
+
+    //Read the data
+    var dataset;
+    var currGroups;
+    d3.csv("Precip_Temp_df.csv", dataPreprocessor).then(function(data){
+        
+        dataset = data
+      
+        console.log(dataset)
+        var groups = d3.map(dataset, function(d){ return d.Type;}).keys();
+        groups = groups.map(Number).sort(function(a, b){return a-b});
+        
+        currGroups = groups
+       
+
+        d3.select('#groupSelect')
+        .selectAll('select')
+        .data(groups)
+        .enter()
+        .append('label')
+            .attr('for',function(d){ return d; })
+            .text(function(d) { return d; })
+        .append("input")
+            .attr("checked", true)
+            .attr("type", "checkbox")
+            .attr("id", function(d) { return parseInt(d); })
+            .attr("onClick", "groups(this)");
+        
+        plot(currGroups);
+    })
+    </script>
+  <!doctype html>
