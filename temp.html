@@ -21,8 +21,10 @@
     </ul>
 </nav>
 </header>
+<h3 style="background-color: white;">Temperature by FIPSCode</h3>
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
+
 
 
 <script>
@@ -81,6 +83,21 @@ d3.csv("seasonal_disparities_20th_century.csv", dataPreprocessor).then(function(
   .append('option')
   .text(function(d) {return d})
   .attr('value', function(d) {return d})
+
+  d3.selectAll('svg').append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width/2 + 75)
+    .attr("y", height+40)
+    .text("FIPS Code");
+
+    d3.selectAll('svg').append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "end")
+      .attr("x", -150)
+      .attr("y", 20)
+      .attr("transform", "rotate(-90)")
+      .text("Temperature");
  
 
   updateChart(yearList[0]);

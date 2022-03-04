@@ -69,3 +69,21 @@ label {
     padding-right: 1em;
     padding-left: 1em;
 }
+
+.column {
+    float: left;
+    width: 50%;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+
+  button {
+    fill: aliceblue;
+  }
+
