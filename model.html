@@ -127,7 +127,7 @@
             
         d3.select('#'+model_csv[name])
         .append('div')
-            .attr('class', 'collapse show')
+            .attr('class', 'collapse')
             .attr('id', 'collapse-body-'+model_csv[name])
         .append('div')
             .attr('class', 'card-body')
@@ -240,7 +240,7 @@
     //Read the data
     var dataset;
     var currGroups;
-    d3.csv("Precip_Temp_df_500.csv", dataPreprocessor).then(function(data){
+    d3.csv("Precip_Temp_df.csv", dataPreprocessor).then(function(data){
         
         dataset = data
       
