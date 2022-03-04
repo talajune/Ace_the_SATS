@@ -41,7 +41,13 @@
             <h4>Model Comparison</h4>
             <div class="row">
                 <div class="column" id='my_dataviz'>
-                    <div id="groupSelect"></div>
+                    <p>Select Year:</p>
+                    <div id='yearSelect'>
+                        <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
+                    </div>
+                    <div id="groupSelect">
+                        
+                    </div>
                     <h3 style="background-color: white; text-align: left; padding-left: 8em;">Precipiation vs Temperature</h3>
                 </div>
                 <div class="column" id='charts'>
@@ -57,6 +63,7 @@
 
   function dataPreprocessor(row) {
     return {
+        Year: +row.YEAR,
         Type: +row.Type,
         PRECIPITATION_MA : +row.PRECIPITATION_MA,
         TEMPERATURE_MA: +row.TEMPERATURE_MA
@@ -142,7 +149,7 @@
         createChart(key);
     });
       
-    function plot(group) {
+    function plot(group, year) {
 
         var x = d3.scaleLinear()
             .domain([0, d3.max(dataset, function(d) { return d.PRECIPITATION_MA; })])
@@ -181,7 +188,7 @@
 
         //console.log(group)
         var filteredGroups = dataset.filter(function(d){
-            return currGroups.includes(d.Type);
+            return currGroups.includes(d.Type) && d.Year == year;
         });
 
         var dots = chartG.selectAll('.dot')
@@ -233,13 +240,25 @@
             currGroups.push(parseInt(num.id))
         }
         
-        plot(currGroups)
+        plot(currGroups, year)
 
     }
+
+    function onCategoryChanged() {
+        
+        var select = d3.select('#categorySelect').node();
+        // Get current value of select element
+        var year = select.options[select.selectedIndex].value;
+        
+        plot(currGroups, year)
+    }
+
+   
 
     //Read the data
     var dataset;
     var currGroups;
+    var year;
     d3.csv("Precip_Temp_df.csv", dataPreprocessor).then(function(data){
         
         dataset = data
@@ -249,6 +268,19 @@
         groups = groups.map(Number).sort(function(a, b){return a-b});
         
         currGroups = groups
+       
+        var yearList = d3.map(dataset, function(d){return d.Year;}).keys().sort()
+
+        var drop = d3.select('#categorySelect')
+            .selectAll('select')
+            .data(yearList)
+            .enter()
+            .append('option')
+            .text(function(d) {return d})
+            .attr('value', function(d) {return d})
+
+        var select = d3.select('#categorySelect').node();
+        year = select.options[select.selectedIndex].value;
        
 
         d3.select('#groupSelect')
@@ -268,7 +300,7 @@
             .attr("onClick", "groups(this)")
     
         
-        plot(currGroups);
+        plot(currGroups, year);
     })
     </script>
   <!doctype html>

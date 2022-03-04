@@ -87,3 +87,10 @@ label {
     fill: aliceblue;
   }
 
+  div {
+      padding: 1em
+  }
+
+  select {
+      padding: 0.5em
+  }
