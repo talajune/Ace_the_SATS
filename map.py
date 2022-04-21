@@ -6,7 +6,6 @@ import plotly.express as px
 from urllib.request import urlopen
 import json
 
-from __future__ import print_function
 from flask import Flask, render_template, make_response
 from flask import redirect, request, jsonify, url_for
 
@@ -27,6 +26,7 @@ def index():
     title = 'Home Page'
     return render_template('index.html',
                            title=title)
+
 
 
 
