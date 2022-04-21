@@ -87,10 +87,24 @@ label {
     fill: aliceblue;
   }
 
-  div {
-      padding: 1em
+  select {
+      padding: 0.5em;
   }
 
-  select {
-      padding: 0.5em
+  .profile-content {
+    padding: 2em;
   }
+
+  .content {
+      padding: 4em 4em 0 4em;
+  }
+
+  .p-img {
+      width: 100%;
+      height: 100%;
+  }
+
+  .profile {
+    height: 70%;
+    width: 70%;
+}
