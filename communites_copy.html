@@ -1,0 +1,287 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- JavaScript Bundle with Popper -->
+<head>
+    <title>Ace the SATS Capstone Project</title>
+    <link rel="stylesheet" 
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+    crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  
+  <link rel='stylesheet' href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet"></head>
+  <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div>
+        <div class="header">
+            <h1>Team Ace the SATS</h1>
+            <h2>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h2>
+            <h3>Sponsor: American Communities Project & USA Facts</h3>
+        </div>
+        <nav class="navigation">
+            <ul>
+                <li><a class="page" href="index.html">Home</a></li>
+                <li><a class="page" href="temp.html">Temp Viz</a></li>
+                <li><a class="page" href="communites.html">Percent Change Analysis</a></li>
+                <li><a class="page" href="communites_overview.html">Percent Change Overview</a></li>
+            </ul>
+        </nav>
+        <text>Temperature</text>
+        <label class="switch">
+            <input type="checkbox" id='toggle' onchange="toggle()"> 
+            <span class="slider round"></span>
+          </label>
+          <text>Precipitation</text>
+        <div id="my_dataviz"></div>
+        <div id='yearSelect'>
+            <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
+        </div>
+    </div>
+    
+
+</body>
+<script>
+
+function dataPreprocessor(row) {
+    return {
+        Type: row.Type,
+        Year: row.Year,
+        Season: row.Season,
+        Precip_Change: row.Precip_Change,
+        Temp_Change: row.Temp_Change
+    };}
+
+   let community_names =  {1: 'Exurbs',
+            2: 'Graying America',
+            3: 'African American South',
+            4: 'Evangelical Hubs',
+            5: 'Working Class Country',
+            6: 'Military Posts',
+            7: 'Urban Suburbs',
+            8: 'Hispanic Centers',
+            9: 'Native American Lands',
+            10: 'Rural Middle America',
+            11: 'College Towns',
+            12: 'LDS Enclaves',
+            13: 'Aging Farmlands',
+            14: 'Big Cities',
+            15: 'Middle Suburbs'}
+
+    let weather = 'Temp';
+    function toggle() {
+        
+        var select = d3.select('#toggle').node();
+        
+        if (select.checked) {
+            weather = 'Precip'
+
+        } else {
+            weather = 'Temp'
+            
+        }
+
+        //console.log(getYear(date[1], date[0]))
+        updatePlot(getYear(date[1], date[0]), weather)
+        
+      
+        
+    }
+
+    let date;
+    function onCategoryChanged() {
+
+        var select = d3.select('#categorySelect').node();
+      
+        var category = select.options[select.selectedIndex].value;
+        date = category.split(' ')
+
+        let start_data = getYear(date[1], date[0])
+        updatePlot(start_data, weather)
+    }
+
+    var margin = {top: 30, right: 30, bottom: 30, left: 60},
+    width = 1100 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")")
+            .attr('class', 'translate');
+    
+    let dataset;
+
+
+
+    let yearList;
+
+
+    d3.csv('final_df.csv', dataPreprocessor).then(function(data) {
+        dataset = data;
+        
+        //console.log(data)
+        let years =  d3.set(dataset.map(function(item){return item.Year})).values().sort()
+
+        let yearList = []
+        years.forEach((ele) => {
+            yearList.push('Winter ' + ele)
+            yearList.push('Summer ' + ele)
+        })
+    
+        
+        //add year filter maybe seasons
+        date = yearList[0].split(' ')
+        //console.log(date)
+        start_data = getYear(date[1], date[0])
+        //console.log(start_data)
+        let types = dataset.map(function(item){return community_names[item.type];})
+
+        var dropdown = d3.select('#categorySelect')
+            .selectAll('select')
+            .data(yearList)
+            .enter()
+            .append('option')
+            .text(function(d) {
+                return d
+            })
+            .attr('value', function(d) {return d})
+
+
+        let max = d3.max(dataset, function(d) {
+            return Math.abs(d.Precip_Change)
+        })
+
+        x = d3.scaleLinear()
+        .domain([0, max])
+        .range([0,700]);
+
+    
+        svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).ticks(0));
+
+        // Add Y axis
+        y = d3.scaleLinear()
+        .domain([0,15])
+        .range([height, 0]);
+
+
+        d3.select('svg').append('text')
+        .text('Community Types')
+        .attr('class', 'axis-label')
+        .attr('transform', 'translate('+[20, height / 3 * 2]+')rotate(270)');
+
+        d3.select('svg').append('text')
+        .text('Percent Change')
+        .attr('class', 'axis-label')
+        .attr('y', 13)
+        .attr('x', width/2)
+
+        svg.append("g")
+        .call(d3.axisLeft(y).ticks(0))
+
+        updatePlot(start_data, weather)
+        
+    
+
+    })
+
+       
+    
+    
+    function getYear(year, season) {
+
+        let filtered_year = dataset.filter(function(d){
+            return d.Year == year && d.Season == season;
+        });
+    
+        return filtered_year  
+
+    }
+
+
+    function updatePlot(data, weather) {
+        let w = weather+'_Change'
+
+        var bars = svg.selectAll('.bars')
+            .data(data, function(d) {
+                return d;
+        })
+        
+        console.log(w)
+        let barsEnter = bars.enter()
+            .append("rect")
+            .attr('class', 'bars')
+            .merge(bars)
+        
+        barsEnter
+            .attr('length', function(d, i) {
+                console.log(d)
+                return x(d[w])
+            })
+            .attr('width', function(d, i) {
+                return x(Math.abs(d[i, w]));
+            })
+            .attr('value', function(d, i) {
+                return d[i, w]
+            })
+            .attr('fill', function(d, i) {
+                if (d[i, w] > 0 && weather == 'Temp') {
+                    return 'orange'
+                } else if (d[i, w] < 0 && weather == 'Temp') {
+                    return '#ADD8E6'
+                } else if (d[i, w] > 0 && weather == 'Precip') {
+                    return 'blue'
+                } else {
+                    return '#ADD8E6'
+                }
+            })
+            .attr('x', 10)
+            .attr('y', function(d, i) {
+                return y(i+1);
+            })
+            .attr('height', 15)
+
+            
+
+        var text = svg.selectAll(".bartext")
+            .data(data, function(d) {
+                return d;
+        })
+
+        var textEnter = text.enter()
+            .append("text")
+            .attr('class', 'bartext')
+            .merge(text);
+
+        textEnter
+           .attr("x", function (d) {
+                return x(Math.abs(d[w]))+12;
+                })
+            .attr("y", function(d, i) {
+                return y(i+1)+8
+            })
+            .text(function(d,i) {
+                return parseFloat(d[w]).toFixed(2)+'% in ' + community_names[i+1]});
+            
+
+        
+        bars.exit().remove();
+        text.exit().remove();
+    }
+
+
+</script>
