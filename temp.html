@@ -7,6 +7,7 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="./d3-tip.js"></script>
 <header>
     <div class="header">
         <h1>Team Ace the SATS</h1>
@@ -27,6 +28,7 @@
 <!-- Create a div where the graph will take place -->
 
 <div id="my_dataviz"></div>
+<div id='hover_graph' class="column"></div>
 
 <script>
 
@@ -46,6 +48,7 @@ function dataPreprocessor(row) {
   };
 }
 
+let date;
 function onCategoryChanged() {
     var select = d3.select('#categorySelect').node();
     // Get current value of select element
@@ -145,6 +148,8 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
   var groups = d3.map(data, function(d){return(d.County)}).keys()
 
   var yearList = d3.map(data, function(d){return d.Year;}).keys().sort()
+  date = yearList[0].split(' ')
+  console.log(date)
 
   var yearDropDown = d3.select('#yearSelect')
   .selectAll('select')
@@ -153,6 +158,10 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
   .append('option')
   .text(function(d) {return d})
   .attr('value', function(d) {return d})
+
+
+  // line_data = lineData("Santa Clara County");
+  //   console.log(line_data);
 
 
     // menu with all state selections
@@ -216,7 +225,7 @@ d3.select("#buttonXlim").on("input", updatePlot)
   var yAxis = svg.append("g")
     .call(d3.axisLeft(y))
     .selectAll("text")
-     .style("text-anchor", "end")
+  //    .style("text-anchor", "end")
 
   var z = d3.scaleSqrt()
     .domain([200, 20184730])
@@ -257,15 +266,14 @@ d3.select("#buttonXlim").on("input", updatePlot)
       .attr("cy", function (d) { return y(d.Temp_measurement); } )
   }
 
-
-
-
 function updateChart(stateFilter, yearFilter) {
 
   // Filter for Data associated with selected state
     var filteredTemps = temperature.filter(function(d){
         return d.State == stateFilter && d.Year == yearFilter;
     });
+
+
 
     // **** Draw and Update your chart here ****
 
@@ -274,7 +282,6 @@ function updateChart(stateFilter, yearFilter) {
     .data(filteredTemps, function(d) {
         return d.Temp_measurement;
     })
-
 
     var dotsEnter = dots.enter()
       .append("g")
@@ -302,6 +309,72 @@ function updateChart(stateFilter, yearFilter) {
     dots.exit().remove();
 
 }
+
+// function lineData(county) {
+
+//   let filtered_type = temperature.filter(function(d)  {
+//       return d.County == county;
+//   })
+
+//   return filtered_type;
+// }
+
+// var toolTip = d3.tip()
+//             .attr("class", "d3-tip")
+//             .offset([-12, 0])
+//             .html(function(d) {
+//                 return createLineGraph(lineData(d.County));
+//             });
+
+// function createLineGraph(data) {
+
+//   let svg2 = d3.select('#hover_graph')
+//       .append('svg')
+//           .attr('class', 'hover')
+//           .attr("width", width/2+ margin.left + margin.right)
+//           .attr("height", height/2 + margin.top + margin.bottom)
+
+//       .append("g")
+//           .attr("transform",
+//               "translate(" + margin.left + "," + margin.top + ")")
+//           .attr('class', 'translate')
+//           .attr('fill', 'black');
+
+//   var x = d3.scalePoint()
+//       .domain(['2000', '2005', '2010', '2015', '2020'])
+//       .range([0, width/2]);
+
+
+//   svg2.append("g")
+//       .attr("transform", "translate(0," + height/2 + ")")
+//       .call(d3.axisBottom(x).ticks(0));
+
+//   svg2.append('text')
+//       .text('Temperature Change Overview in ' + data.County)
+//       .attr("transform", "translate("+ 100 + ',0' + ")")
+
+
+//   // Add Y axis
+//   var y = d3.scaleLinear()
+//       .domain([d3.min(data, function(d) { return +d.Temp_measurement; }), d3.max(data, function(d) { return +d.Temp_measurement; })])
+//       .range([ height/2, 0 ]);
+//   svg2.append("g")
+//       .call(d3.axisLeft(y));
+
+//   svg2.append("path")
+//       .datum(data)
+//       .attr("fill", "none")
+//       .attr("stroke", "steelblue")
+//       .attr("stroke-width", 1.5)
+//       .attr("d", d3.line()
+//           .x(function(d) {
+//               return x(d.Year.slice(-4)) })
+//           .y(function(d) { return y(d.Temp_measurement) })
+//           )
+
+//   svg2.call(toolTip);
+// }
+
 
 
 
