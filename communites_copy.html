@@ -10,17 +10,17 @@
 <!-- JavaScript Bundle with Popper -->
 <head>
     <title>Ace the SATS Capstone Project</title>
-    <link rel="stylesheet" 
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
-    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+    <link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
     crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  
+
   <link rel='stylesheet' href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet"></head>
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-  
+
   <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </head>
 <body>
@@ -40,7 +40,7 @@
         </nav>
         <text>Temperature</text>
         <label class="switch">
-            <input type="checkbox" id='toggle' onchange="toggle()"> 
+            <input type="checkbox" id='toggle' onchange="toggle()">
             <span class="slider round"></span>
           </label>
           <text>Precipitation</text>
@@ -52,10 +52,10 @@
                 <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
             </div>
         </div>
-        
-        
+
+
     </div>
-    
+
 
 </body>
 <script>
@@ -87,22 +87,22 @@
             Temp_Change: +row.Temp_Change
         };}
 
-   
 
-    // create toggle function for updating bar chart 
+
+    // create toggle function for updating bar chart
     let weather = 'Temp';
     function toggle() {
         var select = d3.select('#toggle').node();
-        
+
         if (select.checked) {
             weather = 'Precip'
 
         } else {
             weather = 'Temp'
-            
+
         }
         updatePlot(getYear(date[1], date[0]), weather)
-         
+
     }
 
     // create year change dropdown for updating bar chart
@@ -110,7 +110,7 @@
     function onCategoryChanged() {
 
         var select = d3.select('#categorySelect').node();
-      
+
         var category = select.options[select.selectedIndex].value;
         date = category.split(' ')
 
@@ -132,7 +132,7 @@
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")")
             .attr('class', 'translate');
-    
+
     // define global variables
     let dataset;
     let yearList;
@@ -140,7 +140,7 @@
     // read csv file
     d3.csv('final_df.csv', dataPreprocessor).then(function(data) {
         dataset = data;
-        
+
         // create list for dropdown
         let years =  d3.set(dataset.map(function(item){return item.Year})).values().sort()
         let yearList = []
@@ -148,15 +148,15 @@
             yearList.push('Winter ' + ele)
             yearList.push('Summer ' + ele)
         })
-    
-        // create start date and get corresponding start data 
+
+        // create start date and get corresponding start data
         date = yearList[0].split(' ')
         start_data = getYear(date[1], date[0])
 
         // initialize start data for line graph on hover
         line_data = lineData('1', 'Winter')
         //console.log(line_data)
-       
+
         // define community type number and convert to name
         let types = dataset.map(function(item){return community_names[item.type];})
 
@@ -181,13 +181,13 @@
         .attr('y', 13)
         .attr('x', width/2)
 
-        
+
         // create plot with start data
         updatePlot(start_data, weather)
-        
+
 
     })
- 
+
     // return data for hover line graph
     function lineData(type, season) {
 
@@ -204,8 +204,8 @@
         let filtered_year = dataset.filter(function(d){
             return d.Year == year && d.Season == season;
         });
-    
-        return filtered_year  
+
+        return filtered_year
 
     }
 
@@ -216,7 +216,7 @@
                 return createLineGraph(lineData(d.Type, date[0]));
             });
 
-   
+
 
     // updates plot with given data
     function updatePlot(data, weather) {
@@ -226,7 +226,7 @@
             return d[w]
         })
 
-        // find max value 
+        // find max value
         let max = d3.max(data, function(d) {
             return d[w]
         })
@@ -246,7 +246,7 @@
         y = d3.scaleLinear()
             .domain([0,15])
             .range([height, 0])
-          
+
         // svg.append("g")
         //     .attr('class', 'yaxis')
         //     .attr('transform',  "translate(" + x(0)+ ",0)")
@@ -257,12 +257,12 @@
             .data(data, function(d) {
                 return d;
         })
-        
+
         let barsEnter = bars.enter()
             .append("rect")
             .attr('class', 'bars')
             .merge(bars)
-        
+
         barsEnter
             .attr('length', function(d, i) {
                 return x(d[w])
@@ -282,20 +282,20 @@
                     return '#ADD8E6'
                 }
             })
-            .attr("x", function(d) { 
+            .attr("x", function(d) {
                 if (min <= 0 ) {
-                    return x(Math.min(0, d[w])); 
+                    return x(Math.min(0, d[w]));
                 } else {
-                    return x(Math.min(min, d[w])); 
+                    return x(Math.min(min, d[w]));
                 }
-                
+
             })
             .attr('y', function(d, i) {
                 return y(i+1);
             })
             .attr('height', 15)
 
-       
+
         // create text labels
         var text = svg.selectAll(".bartext")
             .data(data, function(d) {
@@ -311,9 +311,9 @@
            .attr("x", function (d) {
                 //return x(Math.abs(d[w]))+12;
                 if (min <= 0 ) {
-                    return x(Math.min(0, d[w])); 
+                    return x(Math.min(0, d[w]));
                 } else {
-                    return x(Math.min(min, d[w])); 
+                    return x(Math.min(min, d[w]));
                 }
                 })
             .attr("y", function(d, i) {
@@ -321,7 +321,7 @@
             })
             .text(function(d,i) {
                 return parseFloat(d[w]).toFixed(2)+'% in ' + community_names[i+1]});
-            
+
 
         //remove old once updated
         bars.exit().remove();
@@ -334,9 +334,9 @@
         text.exit().remove();
 
         d3.select('.yaxis').remove()
-        
+
     }
-    
+
     function createLineGraph(data) {
 
         let w = weather+'_Change'
@@ -346,18 +346,18 @@
                 .attr('class', 'hover')
                 .attr("width", width/2+ margin.left + margin.right)
                 .attr("height", height/2 + margin.top + margin.bottom)
-                
+
             .append("g")
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")")
                 .attr('class', 'translate')
-                .attr('fill', 'black');        
+                .attr('fill', 'black');
 
         var x = d3.scalePoint()
             .domain(['2000', '2005', '2010', '2015', '2020'])
             .range([0, width/2]);
 
-        
+
         svg2.append("g")
             .attr("transform", "translate(0," + height/2 + ")")
             .call(d3.axisBottom(x).ticks(0));
@@ -375,7 +375,10 @@
 
         // Add Y axis
         var y = d3.scaleLinear()
-            .domain([d3.min(data, function(d) { return +d[w]; }), d3.max(data, function(d) { return +d[w]; })])
+            .domain([d3.min(data, function(d) {
+                console.log("this is w: " + w)
+                 return +d[w];
+                }), d3.max(data, function(d) { return +d[w]; })])
             .range([ height/2, 0 ]);
         svg2.append("g")
             .call(d3.axisLeft(y));
@@ -386,7 +389,7 @@
             .attr("stroke", "steelblue")
             .attr("stroke-width", 1.5)
             .attr("d", d3.line()
-                .x(function(d) { 
+                .x(function(d) {
                     return x(d.Year.slice(-4)) })
                 .y(function(d) { return y(d[w]) })
                 )
