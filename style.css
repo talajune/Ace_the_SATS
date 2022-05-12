@@ -171,3 +171,11 @@ label {
   .slider.round:before {
     border-radius: 50%;
   }
+
+  .column {
+   
+  }
+
+  #yearSelect {
+    margin: 2em
+  }

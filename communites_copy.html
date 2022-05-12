@@ -6,6 +6,7 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="./d3-tip.js"></script>
 <!-- JavaScript Bundle with Popper -->
 <head>
     <title>Ace the SATS Capstone Project</title>
@@ -19,6 +20,7 @@
   <link rel='stylesheet' href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet"></head>
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  
   <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </head>
 <body>
@@ -42,44 +44,54 @@
             <span class="slider round"></span>
           </label>
           <text>Precipitation</text>
-        <div id="my_dataviz"></div>
-        <div id='yearSelect'>
-            <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
+        <div class="row">
+            <div id="my_dataviz" class="column">
+            </div>
+            <div id='hover_graph' class="column"></div>
+            <div id='yearSelect'>
+                <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
+            </div>
         </div>
+        
+        
     </div>
     
 
 </body>
 <script>
 
-function dataPreprocessor(row) {
-    return {
-        Type: row.Type,
-        Year: row.Year,
-        Season: row.Season,
-        Precip_Change: row.Precip_Change,
-        Temp_Change: row.Temp_Change
-    };}
+// conversion dictionary from type number to name
+    let community_names =  {1: 'Exurbs',
+                2: 'Graying America',
+                3: 'African American South',
+                4: 'Evangelical Hubs',
+                5: 'Working Class Country',
+                6: 'Military Posts',
+                7: 'Urban Suburbs',
+                8: 'Hispanic Centers',
+                9: 'Native American Lands',
+                10: 'Rural Middle America',
+                11: 'College Towns',
+                12: 'LDS Enclaves',
+                13: 'Aging Farmlands',
+                14: 'Big Cities',
+                15: 'Middle Suburbs'}
 
-   let community_names =  {1: 'Exurbs',
-            2: 'Graying America',
-            3: 'African American South',
-            4: 'Evangelical Hubs',
-            5: 'Working Class Country',
-            6: 'Military Posts',
-            7: 'Urban Suburbs',
-            8: 'Hispanic Centers',
-            9: 'Native American Lands',
-            10: 'Rural Middle America',
-            11: 'College Towns',
-            12: 'LDS Enclaves',
-            13: 'Aging Farmlands',
-            14: 'Big Cities',
-            15: 'Middle Suburbs'}
+    // csv preprocessor returns object
+    function dataPreprocessor(row) {
+        return {
+            Type: row.Type,
+            Year: row.Year,
+            Season: row.Season,
+            Precip_Change: +row.Precip_Change,
+            Temp_Change: +row.Temp_Change
+        };}
 
+   
+
+    // create toggle function for updating bar chart 
     let weather = 'Temp';
     function toggle() {
-        
         var select = d3.select('#toggle').node();
         
         if (select.checked) {
@@ -89,14 +101,11 @@ function dataPreprocessor(row) {
             weather = 'Temp'
             
         }
-
-        //console.log(getYear(date[1], date[0]))
         updatePlot(getYear(date[1], date[0]), weather)
-        
-      
-        
+         
     }
 
+    // create year change dropdown for updating bar chart
     let date;
     function onCategoryChanged() {
 
@@ -109,10 +118,12 @@ function dataPreprocessor(row) {
         updatePlot(start_data, weather)
     }
 
+    // define dimensions of bar chart
     var margin = {top: 30, right: 30, bottom: 30, left: 60},
     width = 1100 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
+    // create g with transform
     var svg = d3.select("#my_dataviz")
         .append("svg")
             .attr("width", width + margin.left + margin.right)
@@ -122,31 +133,31 @@ function dataPreprocessor(row) {
                 "translate(" + margin.left + "," + margin.top + ")")
             .attr('class', 'translate');
     
+    // define global variables
     let dataset;
-
-
-
     let yearList;
 
-
+    // read csv file
     d3.csv('final_df.csv', dataPreprocessor).then(function(data) {
         dataset = data;
         
-        //console.log(data)
+        // create list for dropdown
         let years =  d3.set(dataset.map(function(item){return item.Year})).values().sort()
-
         let yearList = []
         years.forEach((ele) => {
             yearList.push('Winter ' + ele)
             yearList.push('Summer ' + ele)
         })
     
-        
-        //add year filter maybe seasons
+        // create start date and get corresponding start data 
         date = yearList[0].split(' ')
-        //console.log(date)
         start_data = getYear(date[1], date[0])
-        //console.log(start_data)
+
+        // initialize start data for line graph on hover
+        line_data = lineData('1', 'Winter')
+        //console.log(line_data)
+       
+        // define community type number and convert to name
         let types = dataset.map(function(item){return community_names[item.type];})
 
         var dropdown = d3.select('#categorySelect')
@@ -159,30 +170,10 @@ function dataPreprocessor(row) {
             })
             .attr('value', function(d) {return d})
 
-
-        let max = d3.max(dataset, function(d) {
-            return Math.abs(d.Precip_Change)
-        })
-
-        x = d3.scaleLinear()
-        .domain([0, max])
-        .range([0,700]);
-
-    
-        svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x).ticks(0));
-
-        // Add Y axis
-        y = d3.scaleLinear()
-        .domain([0,15])
-        .range([height, 0]);
-
-
         d3.select('svg').append('text')
         .text('Community Types')
         .attr('class', 'axis-label')
-        .attr('transform', 'translate('+[20, height / 3 * 2]+')rotate(270)');
+        .attr('transform', 'translate('+[40, height / 3 * 2]+')rotate(270)');
 
         d3.select('svg').append('text')
         .text('Percent Change')
@@ -190,18 +181,24 @@ function dataPreprocessor(row) {
         .attr('y', 13)
         .attr('x', width/2)
 
-        svg.append("g")
-        .call(d3.axisLeft(y).ticks(0))
-
+        
+        // create plot with start data
         updatePlot(start_data, weather)
         
-    
 
     })
+ 
+    // return data for hover line graph
+    function lineData(type, season) {
 
-       
-    
-    
+        let filtered_type = dataset.filter(function(d)  {
+            return d.Type == type && d.Season == season;
+        })
+
+        return filtered_type;
+    }
+
+    // takes in year and season to filter data
     function getYear(year, season) {
 
         let filtered_year = dataset.filter(function(d){
@@ -212,16 +209,55 @@ function dataPreprocessor(row) {
 
     }
 
+    var toolTip = d3.tip()
+            .attr("class", "d3-tip")
+            .offset([-12, 0])
+            .html(function(d) {
+                return createLineGraph(lineData(d.Type, date[0]));
+            });
 
+   
+
+    // updates plot with given data
     function updatePlot(data, weather) {
         let w = weather+'_Change'
 
+        let min = d3.min(data, function(d) {
+            return d[w]
+        })
+
+        // find max value 
+        let max = d3.max(data, function(d) {
+            return d[w]
+        })
+
+        x = d3.scaleLinear()
+        .domain([min, max])
+        .range([0,width]);
+
+        console.log([min,max])
+        console.log(x(min))
+        console.log(data)
+
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        y = d3.scaleLinear()
+            .domain([0,15])
+            .range([height, 0])
+          
+        // svg.append("g")
+        //     .attr('class', 'yaxis')
+        //     .attr('transform',  "translate(" + x(0)+ ",0)")
+        //     .call(d3.axisLeft(y).ticks(0))
+
+        // create bars for chart
         var bars = svg.selectAll('.bars')
             .data(data, function(d) {
                 return d;
         })
         
-        console.log(w)
         let barsEnter = bars.enter()
             .append("rect")
             .attr('class', 'bars')
@@ -229,12 +265,9 @@ function dataPreprocessor(row) {
         
         barsEnter
             .attr('length', function(d, i) {
-                console.log(d)
                 return x(d[w])
             })
-            .attr('width', function(d, i) {
-                return x(Math.abs(d[i, w]));
-            })
+            .attr("width", function(d) { return Math.abs(x(d[w]) - x(0)); })
             .attr('value', function(d, i) {
                 return d[i, w]
             })
@@ -249,14 +282,21 @@ function dataPreprocessor(row) {
                     return '#ADD8E6'
                 }
             })
-            .attr('x', 10)
+            .attr("x", function(d) { 
+                if (min <= 0 ) {
+                    return x(Math.min(0, d[w])); 
+                } else {
+                    return x(Math.min(min, d[w])); 
+                }
+                
+            })
             .attr('y', function(d, i) {
                 return y(i+1);
             })
             .attr('height', 15)
 
-            
-
+       
+        // create text labels
         var text = svg.selectAll(".bartext")
             .data(data, function(d) {
                 return d;
@@ -269,7 +309,12 @@ function dataPreprocessor(row) {
 
         textEnter
            .attr("x", function (d) {
-                return x(Math.abs(d[w]))+12;
+                //return x(Math.abs(d[w]))+12;
+                if (min <= 0 ) {
+                    return x(Math.min(0, d[w])); 
+                } else {
+                    return x(Math.min(min, d[w])); 
+                }
                 })
             .attr("y", function(d, i) {
                 return y(i+1)+8
@@ -278,9 +323,75 @@ function dataPreprocessor(row) {
                 return parseFloat(d[w]).toFixed(2)+'% in ' + community_names[i+1]});
             
 
-        
+        //remove old once updated
         bars.exit().remove();
+
+        barsEnter.on('mouseover', toolTip.show)
+            .on('mouseout', () => {
+                d3.select('.hover').remove()
+            });
+
         text.exit().remove();
+
+        d3.select('.yaxis').remove()
+        
+    }
+    
+    function createLineGraph(data) {
+
+        let w = weather+'_Change'
+
+        let svg2 = d3.select('#hover_graph')
+            .append('svg')
+                .attr('class', 'hover')
+                .attr("width", width/2+ margin.left + margin.right)
+                .attr("height", height/2 + margin.top + margin.bottom)
+                
+            .append("g")
+                .attr("transform",
+                    "translate(" + margin.left + "," + margin.top + ")")
+                .attr('class', 'translate')
+                .attr('fill', 'black');        
+
+        var x = d3.scalePoint()
+            .domain(['2000', '2005', '2010', '2015', '2020'])
+            .range([0, width/2]);
+
+        
+        svg2.append("g")
+            .attr("transform", "translate(0," + height/2 + ")")
+            .call(d3.axisBottom(x).ticks(0));
+
+        svg2.append('text')
+            .text(function() {
+                if (weather == 'Temp') {
+                    return 'Temperature Change Overview in ' + community_names[data[0].Type] //community type x
+                } else {
+                    return 'Precipiation Change Overview in ' + community_names[data[0].Type]
+                }
+            })
+            .attr("transform", "translate("+ 100 + ',0' + ")")
+
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([d3.min(data, function(d) { return +d[w]; }), d3.max(data, function(d) { return +d[w]; })])
+            .range([ height/2, 0 ]);
+        svg2.append("g")
+            .call(d3.axisLeft(y));
+
+        svg2.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function(d) { 
+                    return x(d.Year.slice(-4)) })
+                .y(function(d) { return y(d[w]) })
+                )
+
+        svg2.call(toolTip);
     }
 
 
