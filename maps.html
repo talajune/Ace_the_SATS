@@ -1,0 +1,61 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script type="text/javascript"
+	    src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <script type="text/javascript">
+        function initViz() {
+            var containerDiv = document.getElementById("vizContainer"),
+                url = "http://public.tableau.com/views/RegionalSampleWorkbook/Storms",
+                options = {
+                    hideTabs: true,
+                    onFirstInteractive: function () {
+                        console.log("Run this code when the viz has finished loading.");
+                    }
+                };
+
+            var viz = new tableau.Viz(containerDiv, url, options);
+            // Create a viz object and embed it in the container div.
+        }
+    </script>
+<!-- JavaScript Bundle with Popper -->
+<head>
+    <title>Ace the SATS Capstone Project</title>
+    <link rel="stylesheet" 
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+    crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel='stylesheet' href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet"></head>
+<!-- Create a div where the graph will take place -->
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <div id="main">
+        <div class="header">
+            <h1>Team Ace the SATS</h1>
+            <h2>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h2>
+            <h3>Sponsor: American Communities Project & USA Facts</h3>
+        </div>
+        <nav class="navigation">
+            <ul>
+                <li><a class="page" href="index.html">Home</a></li>
+                <li><a class="page" href="temp.html">Temp Viz</a></li>
+                <li><a class="page" href="communites_copy.html">Percent Change Analysis</a></li>
+            </ul>
+        </nav>
+        <div>
+            <div onload="initViz();">
+                <div id="vizContainer" style="width:800px; height:700px;"></div>
+            </div>
+            
+    </div>
+  </body>
+
+  <!doctype html>
+

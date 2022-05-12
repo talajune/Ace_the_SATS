@@ -188,3 +188,7 @@ label {
 .dot {
     opacity: 0.7;
 }
+
+.hover_graph {
+  align-content: right;
+}

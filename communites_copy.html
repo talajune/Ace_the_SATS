@@ -34,8 +34,8 @@
             <ul>
                 <li><a class="page" href="index.html">Home</a></li>
                 <li><a class="page" href="temp.html">Temp Viz</a></li>
-                <li><a class="page" href="communites.html">Percent Change Analysis</a></li>
-                <li><a class="page" href="communites_overview.html">Percent Change Overview</a></li>
+                <li><a class="page" href="communites_copy.html">Percent Change Analysis</a></li>
+                <li><a class="page" href="maps.html">maps</a></li>
             </ul>
         </nav>
         <text>Temperature</text>
@@ -120,7 +120,7 @@
 
     // define dimensions of bar chart
     var margin = {top: 30, right: 30, bottom: 30, left: 60},
-    width = 1100 - margin.left - margin.right,
+    width = 1000 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
     // create g with transform
@@ -175,12 +175,25 @@
         .attr('class', 'axis-label')
         .attr('transform', 'translate('+[40, height / 3 * 2]+')rotate(270)');
 
-        d3.select('svg').append('text')
-        .text('Percent Change')
-        .attr('class', 'axis-label')
-        .attr('y', 13)
-        .attr('x', width/2)
 
+        let min = d3.min(start_data, function(d) {
+            return d.Temp_Change
+        })
+
+        // find max value 
+        let max = d3.max(start_data, function(d) {
+            return d.Temp_Change
+        })
+
+        x = d3.scaleLinear()
+        .domain([min, max])
+        .range([0,width]);
+
+        svg.append("g")
+            .attr('class', 'xaxis')
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+            
         
         // create plot with start data
         updatePlot(start_data, weather)
@@ -215,16 +228,49 @@
             .html(function(d) {
                 return createLineGraph(lineData(d.Type, date[0]));
             });
+      
 
+    let w_code = {'Temp': 'Tempurature', 'Precip':'Precipiations'}
+    function updateTitle(data) {
+        
+        d3.select('svg')
+            .selectAll('.title')
+            .join(
+            function(enter) {
+                return enter.append('text')
+                //.text('Percent Change in ' + w_code[weather] + ' for ' + date[0] + ' ' + date[1])
+            },
+            function(update) {
+                return update.text('Percent Change in ' + w_code[weather] + ' for ' + date[0] + ' ' + date[1])
+            }, function(exit) {
+                return exit.remove()
+                
+            }
+            )
+            .attr('class', 'title')
+            .attr('y', 13)
+            .attr('x', width/2)
+            
+        }
    
 
     // updates plot with given data
     function updatePlot(data, weather) {
         let w = weather+'_Change'
 
+
+        let title = d3.select('svg').append('text')
+          .attr('class', 'title')
+
+        updateTitle()   
+
         let min = d3.min(data, function(d) {
             return d[w]
         })
+
+        if (min > 0) {
+            min = 0
+        }
 
         // find max value 
         let max = d3.max(data, function(d) {
@@ -232,25 +278,21 @@
         })
 
         x = d3.scaleLinear()
-        .domain([min, max])
-        .range([0,width]);
+         .domain([min, max])
+         .range([0,width]);
 
-        console.log([min,max])
-        console.log(x(min))
-        console.log(data)
-
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
+         svg.selectAll('.xaxis')
+         .call(d3.axisBottom(x))
+            
 
         y = d3.scaleLinear()
             .domain([0,15])
             .range([height, 0])
-          
-        // svg.append("g")
-        //     .attr('class', 'yaxis')
-        //     .attr('transform',  "translate(" + x(0)+ ",0)")
-        //     .call(d3.axisLeft(y).ticks(0))
+
+        svg.append("g")
+        .attr('class', 'yaxis')
+        .call(d3.axisLeft(y).ticks(15))
+       
 
         // create bars for chart
         var bars = svg.selectAll('.bars')
@@ -309,7 +351,6 @@
 
         textEnter
            .attr("x", function (d) {
-                //return x(Math.abs(d[w]))+12;
                 if (min <= 0 ) {
                     return x(Math.min(0, d[w])); 
                 } else {
@@ -333,7 +374,6 @@
 
         text.exit().remove();
 
-        d3.select('.yaxis').remove()
         
     }
     
@@ -350,8 +390,7 @@
             .append("g")
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")")
-                .attr('class', 'translate')
-                .attr('fill', 'black');        
+                .attr('class', 'translate');
 
         var x = d3.scalePoint()
             .domain(['2000', '2005', '2010', '2015', '2020'])
@@ -370,7 +409,7 @@
                     return 'Precipiation Change Overview in ' + community_names[data[0].Type]
                 }
             })
-            .attr("transform", "translate("+ 100 + ',0' + ")")
+            .attr("transform", "translate("+ 50 + ',0' + ")")
 
 
         // Add Y axis
@@ -382,14 +421,41 @@
 
         svg2.append("path")
             .datum(data)
-            .attr("fill", "none")
-            .attr("stroke", "steelblue")
-            .attr("stroke-width", 1.5)
-            .attr("d", d3.line()
-                .x(function(d) { 
-                    return x(d.Year.slice(-4)) })
-                .y(function(d) { return y(d[w]) })
-                )
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function(d) { 
+                        return x(d.Year.slice(-4)) })
+                    .y(function(d) { return y(d[w]) })
+                    )
+        
+        svg2
+            .append("g")
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+                .attr("cx", function(d) { return x(d.Year.slice(-4)) } )
+                .attr("cy", function(d) { return y(d[w]) } )
+                .attr("r", 5)
+                .attr("fill", function(d) {
+                    if (d.Year == date[1]) {
+                        return 'orange'
+                    } else {
+                        return "#69b3a2"
+                    }
+                })    
+                
+        svg2.append('text')
+        .text('% Change')
+        .attr('class', 'axis-label')
+        .attr('transform', 'translate('+[-40, height/3]+')rotate(270)');
+
+        svg2.append('text')
+        .text('Year')
+        .attr('class', 'axis-label')
+        .attr('transform', 'translate('+[width/2, height/3]);;
 
         svg2.call(toolTip);
     }
