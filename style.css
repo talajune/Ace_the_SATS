@@ -192,3 +192,12 @@ label {
 .hover_graph {
   align-content: right;
 }
+
+.float-div {
+  width: 50%;
+  float: left;
+}
+
+.dropdown {
+  padding-top: 20;
+}
