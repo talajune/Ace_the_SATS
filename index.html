@@ -47,10 +47,28 @@
         <div class="row">
             <div id="my_dataviz" class="column">
             </div>
-            <div id='hover_graph' class="column"></div>
-            <div id='yearSelect'>
+            <div id='hover_graph' class="column" style="width: 600px; margin-left:auto">
+                <h1 class="outline">
+                    Key Insights
+                </h1>
+                <h3>
+                    1. The largest precipiation change occured in Urban Suburbs in 2020 after almost no change in previous 15 years<br>
+                    2. The most consistent precipation happened in the African American South<br>
+                    3. The largest temperature change occured in Rural Middle America in 2000 then stablized<br>
+                    4. Native American Lands had the most consistent temperature
+                </h3>
+            </div>
+            <div class="column" id='yearSelect'>
                 <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
             </div>
+            <div class="row">
+                <div class="column">
+                    <h4> 
+                        This visualization is designed to show the percent change in various climate patterns from the 20th Century Average. This horizontal bar chart is interactive and when the user hovers over one of the bars, the respective community type overview will be shown in order to see the change over the 20 years of the 21st Century. The user can toggle between temperature and precipitation as well as change the year.
+                    </h4>
+                </div>
+            </div>
+            
         </div>
 
 
@@ -120,7 +138,7 @@
 
     // define dimensions of bar chart
     var margin = {top: 30, right: 30, bottom: 30, left: 60},
-    width = 1000 - margin.left - margin.right,
+    width = 800 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
     // create g with transform
@@ -317,11 +335,11 @@
                 if (d[i, w] > 0 && weather == 'Temp') {
                     return 'orange'
                 } else if (d[i, w] < 0 && weather == 'Temp') {
-                    return '#ADD8E6'
+                    return '#CDE1F1'
                 } else if (d[i, w] > 0 && weather == 'Precip') {
-                    return 'blue'
+                    return '#CDE1F1'
                 } else {
-                    return '#ADD8E6'
+                    return '#E8D3B9'
                 }
             })
             .attr("x", function(d) {
@@ -352,9 +370,9 @@
         textEnter
            .attr("x", function (d) {
                 if (min <= 0 ) {
-                    return x(Math.min(0, d[w]));
+                    return x(Math.min(0, d[w]))
                 } else {
-                    return x(Math.min(min, d[w]));
+                    return x(Math.min(min, d[w]))
                 }
                 })
             .attr("y", function(d, i) {
@@ -446,7 +464,7 @@
                     if (d.Year == date[1]) {
                         return 'orange'
                     } else {
-                        return "#69b3a2"
+                        return '#CDE1F1'
                     }
                 })    
                 
@@ -454,11 +472,6 @@
         .text('% Change')
         .attr('class', 'axis-label')
         .attr('transform', 'translate('+[-40, height/3]+')rotate(270)');
-
-        svg2.append('text')
-        .text('Year')
-        .attr('class', 'axis-label')
-        .attr('transform', 'translate('+[width/2, height/3]);;
 
         svg2.call(toolTip);
     }
