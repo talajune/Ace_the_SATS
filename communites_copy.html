@@ -32,10 +32,10 @@
         </div>
         <nav class="navigation">
             <ul>
-                <li><a class="page" href="index.html">Home</a></li>
-                <li><a class="page" href="temp.html">Temp Viz</a></li>
+                <li><a class="page" href="https://ace-the-sats.webflow.io/">Home</a></li>
+                <li><a class="page" href="temp.html">Temperature vs Income by County</a></li>
                 <li><a class="page" href="communites_copy.html">Percent Change Analysis</a></li>
-                <li><a class="page" href="maps.html">maps</a></li>
+                <li><a class="page" href="maps.html">Maps</a></li>
             </ul>
         </nav>
         <text>Temperature</text>
@@ -429,7 +429,7 @@
                 .attr("stroke-width", 1.5)
                 .attr("d", d3.line()
                     .x(function(d) { 
-                        return x(d.Year.slice(-4)) })
+                        return x(d.Year) })
                     .y(function(d) { return y(d[w]) })
                     )
         
@@ -439,7 +439,7 @@
             .data(data)
             .enter()
             .append("circle")
-                .attr("cx", function(d) { return x(d.Year.slice(-4)) } )
+                .attr("cx", function(d) {return x(d.Year) } )
                 .attr("cy", function(d) { return y(d[w]) } )
                 .attr("r", 5)
                 .attr("fill", function(d) {
