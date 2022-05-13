@@ -16,10 +16,9 @@
     </div>
     <nav class="navigation">
         <ul>
-            <li><a class="page" href="https://ace-the-sats.webflow.io/">Home</a></li>
-            <li><a class="page" href="temp.html">Temperature vs Income by County</a></li>
-            <li><a class="page" href="communites_copy.html">Percent Change Analysis</a></li>
-            <li><a class="page" href="maps.html">Maps</a></li>
+            <li><a class="page" href="../index.html">Home</a></li>
+            <li><a class="page" href="main.html">Temp Viz</a></li>
+            <li><a class="page" href="model.html">Model Comparison</a></li>
         </ul>
     </nav>
 </header>
@@ -27,9 +26,18 @@
 
 <h3 style="background-color: white;">Summer Temperatures in Each County by Year</h3>
 <!-- Create a div where the graph will take place -->
-
-<div id="my_dataviz"></div>
-<div id='hover_graph' class="column"></div>
+<div class="dropdown">
+    <label for="categorySelect">Select State: </label>
+    <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
+</div>
+<div class="dropdown">
+    <label for="yearSelect">Select Year: </label>
+    <select class="custom-select" id="yearSelect" onchange="onCategoryChanged()"></select>
+</div>
+<div id="temp_vis">
+    <div class="float-div" id="my_dataviz"></div>
+    <div class="float-div" id='hover_graph' class="column"></div>
+</div>
 
 <script>
 
@@ -49,23 +57,23 @@ function dataPreprocessor(row) {
   };
 }
 
-let date;
+let year = 2000;
 function onCategoryChanged() {
     var select = d3.select('#categorySelect').node();
     // Get current value of select element
     var state = select.options[select.selectedIndex].value;
 
     var select2 = d3.select('#yearSelect').node();
-    var year = select2.options[select2.selectedIndex].value;
+    year = select2.options[select2.selectedIndex].value;
     // Update chart with the selected category of letters
 
     updateChart(state, year);
-    updatePlot(state, year);
+    // updatePlot(state, year);
 }
 
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 70, left: 60},
+var margin = {top: 20, right: 30, bottom: 70, left: 60},
     width = 1300 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom;
 // append the svg object to the body of the page
@@ -161,8 +169,8 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
   .attr('value', function(d) {return d})
 
 
-  // line_data = lineData("Santa Clara County");
-  //   console.log(line_data);
+  line_data = lineData("Santa Clara County");
+    console.log(line_data);
 
 
     // menu with all state selections
@@ -191,27 +199,16 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
       .attr("transform", "rotate(-90)")
       .text("Percent Deviation from 20th Century Median Temp");
 
-      // Add an event listener to the button created in the html part
-d3.select("#buttonXlim").on("input", updatePlot)
-
-
-  // A function that change this tooltip when the user hover a point.
-  // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
-
   updateChart(stateList[0], yearList[0]);
 })
 
-// Add X axis - median income
-
-// var max = d3.max(d3.values(temperature.Med_Income));
-// var min = d3.min(d3.values(temperature.Med_Income));
-// x.domain([min, max]);
 
   var x = d3.scaleLinear()
     .domain([20000, 165000])
     .range([ 0, width ]);
 
   var xAxis = svg.append("g")
+    .attr("class", "xaxis")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x))
     .selectAll("text")
@@ -240,32 +237,6 @@ d3.select("#buttonXlim").on("input", updatePlot)
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-  function updatePlot(stateFilter, yearFilter) {
-    console.log("I am here")
-
-    var filteredTemps = temperature.filter(function(d){
-        return d.State == stateFilter && d.Year == yearFilter;
-    });
-
-    console.log("I am updating");
-    // Get the value of the button
-    // xlim = this.value
-
-    // Update X axis
-    x.domain([d3.min(filteredTemps, function (d) { return d.Income; }), d3.max(filteredTemps, function (d) { return d.Income; })])
-    console.log(d3.max(filteredTemps, function (d) { return d.Income; }))
-    xAxis.transition().duration(1000).call(d3.axisBottom(x)).selectAll("text")
-     .style("text-anchor", "end")
-     .attr("transform", "rotate(-65)");
-
-    // Update chart
-    svg.selectAll("circle")
-      .data(filteredTemps)
-      .transition()
-      .duration(1000)
-      .attr("cx", function (d) { return x(d.Income); } )
-      .attr("cy", function (d) { return y(d.Temp_measurement); } )
-  }
 
 function updateChart(stateFilter, yearFilter) {
 
@@ -274,7 +245,12 @@ function updateChart(stateFilter, yearFilter) {
         return d.State == stateFilter && d.Year == yearFilter;
     });
 
+    x = d3.scaleLinear()
+         .domain([d3.min(filteredTemps, function (d) { return d.Income; }), d3.max(filteredTemps, function (d) { return d.Income; })])
+         .range([0,width]);
 
+         svg.selectAll('.xaxis')
+         .transition().duration(1000).call(d3.axisBottom(x))
 
     // **** Draw and Update your chart here ****
 
@@ -292,89 +268,136 @@ function updateChart(stateFilter, yearFilter) {
       .attr("cy", function (d) { return y(d.Temp_measurement); } )
       .attr("r", function (d) { return z(d.Population); } )
       .style("fill", function (d) { return myColor(d.Comm_Type); } )
-      .on("mouseover", function(d) {
-            div.transition()
-                .duration(200)
-                .style("opacity", .9);
-            div	.html("County: " + d.County + "<br/>" + "Community Type: " + d.Comm_Type + "<br/>"  + "Population: " + d.Population +
-            "<br/>"  + "Income: " + d.Income + "<br/>"  + "% Dev from 20th Century Med : " + d.Temp_measurement)
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-            })
-        .on("mouseout", function(d) {
-            div.transition()
-                .duration(500)
-                .style("opacity", 0);
-        });
+      // .on("mouseover", function(d) {
+      //       div.transition()
+      //           .duration(200)
+      //           .style("opacity", .9);
+      //       div	.html("County: " + d.County + "<br/>" + "Community Type: " + d.Comm_Type + "<br/>"  + "Population: " + d.Population +
+      //       "<br/>"  + "Income: " + d.Income + "<br/>"  + "% Dev from 20th Century Med : " + d.Temp_measurement)
+      //           .style("left", (d3.event.pageX) + "px")
+      //           .style("top", (d3.event.pageY - 28) + "px");
+
+      //       })
+      //   .on("mouseout", function(d) {
+      //       div.transition()
+      //           .duration(500)
+      //           .style("opacity", 0);
+      //   });
 
     dots.exit().remove();
 
+    dotsEnter.on('mouseover', toolTip.show)
+            .on('mouseout', () => {
+                d3.select('.hover').remove()
+            });
+
+
 }
 
-// function lineData(county) {
+function lineData(county, year) {
 
-//   let filtered_type = temperature.filter(function(d)  {
-//       return d.County == county;
-//   })
+  let filtered_type = temperature.filter(function(d)  {
+      return d.County == county;
+  })
+  return filtered_type;
+}
 
-//   return filtered_type;
-// }
+var toolTip = d3.tip()
+            .attr("class", "d3-tip")
+            .offset([-12, 0])
+            .html(function(d) {
+                console.log(d);
+                return createLineGraph(lineData(d.County));
+            });
 
-// var toolTip = d3.tip()
-//             .attr("class", "d3-tip")
-//             .offset([-12, 0])
-//             .html(function(d) {
-//                 return createLineGraph(lineData(d.County));
-//             });
+function createLineGraph(data) {
 
-// function createLineGraph(data) {
+  // for(var i = 0; i < data.length; i++) {
+  //   console.log(data[i])
+  // }
+  let svg2 = d3.select('#hover_graph')
+      .append('svg')
+          .attr('class', 'hover')
+          .attr("width", width/2+ margin.left + margin.right)
+          .attr("height", height/2 + margin.top + margin.bottom)
 
-//   let svg2 = d3.select('#hover_graph')
-//       .append('svg')
-//           .attr('class', 'hover')
-//           .attr("width", width/2+ margin.left + margin.right)
-//           .attr("height", height/2 + margin.top + margin.bottom)
+      .append("g")
+          .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")")
+          .attr('class', 'translate')
+          .attr('fill', 'black');
 
-//       .append("g")
-//           .attr("transform",
-//               "translate(" + margin.left + "," + margin.top + ")")
-//           .attr('class', 'translate')
-//           .attr('fill', 'black');
-
-//   var x = d3.scalePoint()
-//       .domain(['2000', '2005', '2010', '2015', '2020'])
-//       .range([0, width/2]);
-
-
-//   svg2.append("g")
-//       .attr("transform", "translate(0," + height/2 + ")")
-//       .call(d3.axisBottom(x).ticks(0));
-
-//   svg2.append('text')
-//       .text('Temperature Change Overview in ' + data.County)
-//       .attr("transform", "translate("+ 100 + ',0' + ")")
+  var x = d3.scalePoint()
+      .domain(['2000', '2001','2002','2003','2004','2005','2006','2007','2008', '2009', '2010', '2011', '2012','2013','2014','2015', '2016','2017','2018','2019','2020','2021'])
+      .range([0, width/2]);
 
 
-//   // Add Y axis
-//   var y = d3.scaleLinear()
-//       .domain([d3.min(data, function(d) { return +d.Temp_measurement; }), d3.max(data, function(d) { return +d.Temp_measurement; })])
-//       .range([ height/2, 0 ]);
-//   svg2.append("g")
-//       .call(d3.axisLeft(y));
+  svg2.append("g")
+      .attr("transform", "translate(0," + height/2 + ")")
+      .call(d3.axisBottom(x).ticks(0));
 
-//   svg2.append("path")
-//       .datum(data)
-//       .attr("fill", "none")
-//       .attr("stroke", "steelblue")
-//       .attr("stroke-width", 1.5)
-//       .attr("d", d3.line()
-//           .x(function(d) {
-//               return x(d.Year.slice(-4)) })
-//           .y(function(d) { return y(d.Temp_measurement) })
-//           )
+  svg2.append('text')
+      .text('Temperature Change Overview in ' + data[0].County)
+      .attr("transform", "translate("+ 100 + ',0' + ")")
 
-//   svg2.call(toolTip);
-// }
+  svg2.append('text')
+      .text('Temperature Change Overview in ' + data[0].County)
+      .attr("transform", "translate("+ 100 + ',0' + ")")
+
+      data.sort(function(x, y){
+   return d3.ascending(x.Year, y.Year);
+})
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+      .domain([d3.min(data, function(d) { return +d.Temp_measurement; }), d3.max(data, function(d) { return +d.Temp_measurement; })])
+      .range([ height/2, 0 ]);
+  svg2.append("g")
+      .call(d3.axisLeft(y));
+
+  svg2.append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+          .x(function(d) {
+              // console.log(d.Year)
+              return x(d.Year) })
+          .y(function(d) {
+            console.log(d.Temp_measurement)
+            return y(d.Temp_measurement) })
+          )
+
+          svg2
+            .append("g")
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+                .attr("cx", function(d) { return x(d.Year) } )
+                .attr("cy", function(d) { return y(d.Temp_measurement) } )
+                .attr("r", 5)
+                .attr("fill", function(d) {
+                    console.log("YEAR" + year)
+                    if (d.Year == year) {
+                        return 'orange'
+                    } else {
+                        return "#69b3a2"
+                    }
+                })
+
+        svg2.append('text')
+        .text('% Change')
+        .attr('class', 'axis-label')
+        .attr('transform', 'translate('+[-40, height/3]+')rotate(270)');
+
+        svg2.append('text')
+        .text('Year')
+        .attr('class', 'axis-label')
+        .attr('transform', 'translate('+[width/2, height + 20]);;
+  svg2.call(toolTip);
+}
 
 
 
@@ -383,14 +406,7 @@ function updateChart(stateFilter, yearFilter) {
 <body>
     <div id="main">
         <div>
-            <div class="dropdown">
-                <label for="categorySelect">Select State: </label>
-                <select class="custom-select" id="categorySelect" onchange="onCategoryChanged()"></select>
-            </div>
-            <div class="dropdown">
-                <label for="yearSelect">Select Year: </label>
-                <select class="custom-select" id="yearSelect" onchange="onCategoryChanged()"></select>
-            </div>
+
             <!-- <div class="legend">
                 <svg id="my_dataviz" height=300 width=450></svg>
             </div> -->
