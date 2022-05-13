@@ -26,9 +26,7 @@
 <body>
     <div>
         <div class="header">
-            <h1>Team Ace the SATS</h1>
-            <h2>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h2>
-            <h3>Sponsor: American Communities Project & USA Facts</h3>
+            <h1>Climate Change: Through the Lens of American Communities</h1>
         </div>
         <nav class="navigation">
             <ul>
@@ -43,7 +41,8 @@
             <input type="checkbox" id='toggle' onchange="toggle()">
             <span class="slider round"></span>
           </label>
-          <text>Precipitation</text>
+          <text >Precipitation</text><br><br>
+          <text class="outline">Hover over the bars for more information</text>
         <div class="row">
             <div id="my_dataviz" class="column">
             </div>
@@ -71,7 +70,11 @@
             
         </div>
 
-
+    <div class="footer">
+        <h2>UW iSchool Capstone Team Ace the SATS</h2>
+        <h2>Ally Krinsky, Shreya Raj, Srinidhi Balaraman, Tala Tayebi</h2>
+        <h3>Sponsored by American Communities Project & USA Facts</h3>
+    </div>
     </div>
 
 
@@ -256,7 +259,6 @@
             .join(
             function(enter) {
                 return enter.append('text')
-                //.text('Percent Change in ' + w_code[weather] + ' for ' + date[0] + ' ' + date[1])
             },
             function(update) {
                 return update.text('Percent Change in ' + w_code[weather] + ' for ' + date[0] + ' ' + date[1])
@@ -267,7 +269,7 @@
             )
             .attr('class', 'title')
             .attr('y', 13)
-            .attr('x', width/2)
+            .attr('x', width/3)
             
         }
    
@@ -395,16 +397,22 @@
         
     }
 
+    
+
     function createLineGraph(data) {
+
+        var margin = {top: 30, right: 30, bottom: 30, left: 60},
+        width = 900 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
 
         let w = weather+'_Change'
 
         let svg2 = d3.select('#hover_graph')
-            .append('svg')
+             .append('svg')
                 .attr('class', 'hover')
                 .attr("width", width/2+ margin.left + margin.right)
                 .attr("height", height/2 + margin.top + margin.bottom)
-
+                .attr('fill', 'alice blue')
             .append("g")
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")")
@@ -427,13 +435,12 @@
                     return 'Precipiation Change Overview in ' + community_names[data[0].Type]
                 }
             })
-            .attr("transform", "translate("+ 50 + ',0' + ")")
+            .attr("transform", "translate("+ 20 + ',0' + ")")
 
 
         // Add Y axis
         var y = d3.scaleLinear()
             .domain([d3.min(data, function(d) {
-                console.log("this is w: " + w)
                  return +d[w];
                 }), d3.max(data, function(d) { return +d[w]; })])
             .range([ height/2, 0 ]);
