@@ -164,7 +164,7 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
 
   var yearList = d3.map(data, function(d){return d.Year;}).keys().sort()
   date = yearList[0].split(' ')
-  console.log(date)
+  //console.log(date)
 
   var yearDropDown = d3.select('#yearSelect')
   .selectAll('select')
@@ -176,7 +176,7 @@ d3.csv("final_comm_temp_income_pop.csv", dataPreprocessor).then(function(data) {
 
 
   line_data = lineData("Santa Clara County");
-    console.log(line_data);
+    //console.log(line_data);
 
 
     // menu with all state selections
@@ -312,7 +312,7 @@ var toolTip = d3.tip()
             .attr("class", "d3-tip")
             .offset([-12, 0])
             .html(function(d) {
-                console.log(d);
+                //console.log(d);
                 return createLineGraph(lineData(d.County));
             });
 
@@ -371,7 +371,7 @@ function createLineGraph(data) {
               // console.log(d.Year)
               return x(d.Year) })
           .y(function(d) {
-            console.log(d.Temp_measurement)
+            //console.log(d.Temp_measurement)
             return y(d.Temp_measurement) })
           )
 
@@ -385,7 +385,7 @@ function createLineGraph(data) {
                 .attr("cy", function(d) { return y(d.Temp_measurement) } )
                 .attr("r", 5)
                 .attr("fill", function(d) {
-                    console.log("YEAR" + year)
+                    //console.log("YEAR" + year)
                     if (d.Year == year) {
                         return 'orange'
                     } else {
